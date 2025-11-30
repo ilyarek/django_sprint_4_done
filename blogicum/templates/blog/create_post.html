@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        {% if is_edit %}
+                            Редактировать пост
+                        {% else %}
+                            Создать новый пост
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% bootstrap_form form %}
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            {% if is_edit %}
+                                {% bootstrap_button "Сохранить изменения" button_type="submit" button_class="btn-primary" %}
+                                <a href="{% url 'blog:post_detail' post.pk %}" class="btn btn-secondary">Отмена</a>
+                            {% else %}
+                                {% bootstrap_button "Опубликовать" button_type="submit" button_class="btn-primary" %}
+                                <a href="{% url 'blog:index' %}" class="btn btn-secondary">Отмена</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                    
+                    {% if is_edit and post.image %}
+                    <div class="mt-3">
+                        <h6>Текущее изображение:</h6>
+                        <img src="{{ post.image.url }}" alt="{{ post.title }}" class="img-thumbnail" style="max-height: 200px;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

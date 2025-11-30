@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0 text-danger">
+                        Подтверждение удаления
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-warning">
+                        Вы уверены, что хотите удалить этот {{ object_type }}?
+                    </p>
+                    
+                    {% if object_type == 'post' %}
+                        <!-- Отображение поста -->
+                        <div class="card mb-3">
+                            {% if object.image %}
+                                <img src="{{ object.image.url }}" class="card-img-top" alt="{{ object.title }}">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ object.title }}</h5>
+                                <p class="card-text">{{ object.content|truncatewords:50 }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Отображение комментария -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    {{ object.author.username }} - {{ object.created_at|date:"d.m.Y H:i" }}
+                                </h6>
+                                <p class="card-text">{{ object.text }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-danger">Да, удалить</button>
+                            {% if object_type == 'post' %}
+                                <a href="{% url 'blog:post_detail' object.pk %}" class="btn btn-secondary">Отмена</a>
+                            {% else %}
+                                <a href="{% url 'blog:post_detail' object.post.pk %}" class="btn btn-secondary">Отмена</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

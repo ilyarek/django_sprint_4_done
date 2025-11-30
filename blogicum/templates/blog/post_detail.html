@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+<div class="container mt-4">
+    <article class="blog-post">
+        {% if post.image %}
+        <div class="text-center mb-4">
+            <img src="{{ post.image.url }}" 
+                 class="img-fluid rounded post-detail-image" 
+                 alt="{{ post.title }}"
+                 style="max-height: 500px;">
+        </div>
+        {% endif %}
+        
+        <h1 class="display-4">{{ post.title }}</h1>
+        
+        <div class="post-meta mb-4">
+            <p class="text-muted">
+                Автор: <a href="{% url 'blog:profile' post.author.username %}">
+                    {{ post.author.username }}
+                </a> | 
+                Опубликовано: {{ post.created_at|date:"d.m.Y H:i" }} |
+                {% if post.created_at != post.updated_at %}
+                Обновлено: {{ post.updated_at|date:"d.m.Y H:i" }}
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="post-content">
+            {{ post.content|linebreaks }}
+        </div>
+        
+        {% if user == post.author %}
+        <div class="mt-4">
+            <a href="{% url 'blog:edit_post' post.pk %}" class="btn btn-warning">
+                Редактировать пост
+            </a>
+        </div>
+        {% endif %}
+    </article>
+</div>
+
+{% if user.is_authenticated %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Оставить комментарий</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'blog:add_comment' post.pk %}">
+            {% csrf_token %}
+            {% bootstrap_form comment_form %}
+            {% bootstrap_button "Отправить" button_type="submit" button_class="btn-primary" %}
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info mt-4">
+    <a href="{% url 'login' %}">Войдите</a>, чтобы оставить комментарий.
+</div>
+{% endif %}
+
+<!-- Список комментариев -->
+<div class="mt-4">
+    <h5>Комментарии ({{ post.comments_count }})</h5>
+    
+    {% for comment in comments %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <h6 class="card-title">
+                    <a href="{% url 'blog:profile' comment.author.username %}">
+                        {{ comment.author.username }}
+                    </a>
+                </h6>
+                <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+            </div>
+            <p class="card-text">{{ comment.text|linebreaks }}</p>
+            
+            {% if user.is_authenticated and comment.author == user %}
+            <div class="btn-group btn-group-sm">
+                <a href="{% url 'blog:edit_comment' post.pk comment.pk %}" class="btn btn-outline-primary">Редактировать</a>
+                <a href="{% url 'blog:delete_comment' post.pk comment.pk %}" class="btn btn-outline-danger">Удалить</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">Комментариев пока нет.</p>
+    {% endfor %}
+</div>
+
+<style>
+.post-detail-image {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.post-content {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+</style>
+{% endblock %}
